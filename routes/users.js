@@ -9,14 +9,14 @@ const filePath = path.join(__dirname, '../data/users.json');
 console.log(filePath)
 
 let a=[];
-//Neu filePatj hop le
+//Neu filePath hop le
 if(fs.existsSync(filePath)){
     //doi Json => array
     a = JSON.parse(fs.readFileSync(filePath));
 }
 
 user_router.get("/",(req,res)=>{
-    return res.status(200).json(a);
+    return res.status(200).json(a)
 })
 
 user_router.get("/:id",(req, res)=>{
