@@ -1,7 +1,9 @@
 const express = require('express');
 const user_router = express.Router();
 
-const fs = require('fs');
+const validate = require('../middleware/index')
+
+const fs = require('fs');   
 const path = require('path')
 
 const filePath = path.join(__dirname, '../data/users.json');
@@ -28,10 +30,10 @@ user_router.get("/:id",(req, res)=>{
     }
 })
 
-user_router.post("/",(req, res)=>{
+user_router.post("/",validate,(req, res)=>{
     newUser ={
         id: a.length+1,
-        name: req.body.name,
+        fullname: req.body.fullname,
         gender: req.body.gender,
         age: req.body.age
     }
