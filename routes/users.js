@@ -2,68 +2,135 @@ const express = require('express');
 const user_router = express.Router();
 
 const validate = require('../middleware/index')
+const con = require('../database/connection')
 
-const fs = require('fs');   
-const path = require('path')
-
-const filePath = path.join(__dirname, '../data/users.json');
-console.log(filePath)
-
-let a=[];
-//Neu filePath hop le
-if(fs.existsSync(filePath)){
-    //doi Json => array
-    a = JSON.parse(fs.readFileSync(filePath));
-}
-
-user_router.get("/",(req,res)=>{
-    return res.status(200).json(a)
+let listUsers = []
+con.query('SELECT * FROM users ', function(err,result){
+    if(err)
+        console.log(err);
+    listUsers = result;
 })
+
+// const fs = require('fs');   
+// const path = require('path')
+
+// const filePath = path.join(__dirname, '../data/users.json');
+
+// let a=[];
+//Neu filePath hop le
+// if(fs.existsSync(filePath)){
+//     //doi Json => array
+//     a = JSON.parse(fs.readFileSync(filePath));
+// }
+//get data from mySql
+user_router.get("/",(req,res)=>{
+    con.query('SELECT * FROM users ', function(err,result){
+        if(err)
+            console.log(err);
+        return res.send(result)
+    })
+    // next();
+})
+
+// //insert data into mysql
+user_router.post("/",(req,res) =>{
+    const {fullname, gender, age} = req.body
+    let sql = `INSERT INTO users ( fullname, gender, age) VALUES (?,?,?)`;
+    con.query(sql,[fullname, gender, age],function(err,result){
+        if(err)
+        {
+            console.log("Insert data failed!");
+            throw err
+        }
+        return res.json(result)
+    })
+})
+
+//get data
+// user_router.get("/",(req,res)=>{
+//     return res.status(200).json(a)
+// })
 
 user_router.get("/:id",(req, res)=>{
     const id = parseInt(req.params.id);
-    const user = a.find(user => user.id === id);
-    if(user){
-        return res.status(200).json(user)
-    }else {
-        return res.status(404).json("Not found!");
-    }
+    con.query(`SELECT * FROM users WHERE id = ?`,[id], function(err,result){
+        if(err){
+            console.log(err);
+        }
+        else {
+            return res.send(result)
+        }
+    })
 })
 
-user_router.post("/",validate,(req, res)=>{
-    newUser ={
-        id: a.length+1,
-        fullname: req.body.fullname,
-        gender: req.body.gender,
-        age: req.body.age
-    }
-    a.push(newUser);
-    fs.writeFileSync(filePath,JSON.stringify(a));
-    return res.status(201).json(a[a.length-1])
-})
+// user_router.post("/",validate,(req, res)=>{
+//     newUser ={
+//         id: a.length+1,
+//         fullname: req.body.fullname,
+//         gender: req.body.gender,
+//         age: req.body.age
+//     }
+//     a.push(newUser);
+//     fs.writeFileSync(filePath,JSON.stringify(a));
+//     return res.status(201).json(a[a.length-1])
+// })
 
-user_router.put("/:id",(req, res)=>{
+//update data in mysql
+user_router.put("/:id",validate,(req, res)=>{
     const id = parseInt(req.params.id);
-    const userIndex = a.findIndex((user) => user.id === id);
+    const userIndex = listUsers.findIndex((user) => user.id === id);
     if(userIndex == -1)
         res.status(404).send(`User with id ${id} not found`);
     else {
-        const userUpdate = Object.assign({},a[userIndex],req.body);
-        a[userIndex] = userUpdate;
-        fs.writeFileSync(filePath, JSON.stringify(a));
-        res.status(204).end();
+       let sql = 'UPDATE users SET '
+       let values = [];
+
+       const fullname = req.body.fullname;
+       const gender = req.body.gender;
+       const age = req.body.age;
+
+       if(fullname){
+            sql+= "fullname = ?,";
+            values.push(fullname)
+       }
+       if(gender){
+            sql+= "gender = ?,"
+            values.push(gender)
+       }
+       if(age){
+            sql+="age = ?,"
+            values.push(age)
+       }
+       sql = sql.slice(0,-1);
+
+       sql+=" WHERE id = ?";
+       values.push(id);
+
+       con.query(sql,values,(err,result)=>{
+        if(err)
+            {
+                console.log(err);
+                res.status(500).send("Update failed!")
+            }
+        res.send('User updated');
+       })
     }
 })
 
 user_router.delete("/:id",(req, res)=>{
     const id = parseInt(req.params.id);
-    const userIndex = a.findIndex((user) => user.id === id);
+    const userIndex = listUsers.findIndex((user) => user.id === id);
     if(userIndex === -1)
         return res.status(404).send(`User with id ${id} not found`);
     else {
-        a = a.filter(user => user.id !== id);
-        fs.writeFileSync(filePath,JSON.stringify(a));
-        res.status(204).end();
+        let sql = 'DELETE FROM users WHERE id = ?';
+        con.query(sql,[id],(err, result)=>{
+            if(err){
+                console.log(err);
+                return res.status(500).send('Delete failed')
+            }
+            return res.status(200).send(' User Deleted!')
+        })
     }
 })
 
