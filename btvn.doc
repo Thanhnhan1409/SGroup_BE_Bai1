@@ -1,0 +1,10 @@
+- database :
+    connection.js
+    init.js
+
+?(chạy node database/init.js)
+
+ENV:
+    - set env: 
+        vd run server: <tenbien> = <giatri> node app.js
+        cai dotenv

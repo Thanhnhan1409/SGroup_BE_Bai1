@@ -22,6 +22,7 @@ con.query('SELECT * FROM users ', function(err,result){
 //     //doi Json => array
 //     a = JSON.parse(fs.readFileSync(filePath));
 // }
+
 //get data from mySql
 user_router.get("/",(req,res)=>{
     con.query('SELECT * FROM users ', function(err,result){
@@ -42,15 +43,11 @@ user_router.post("/",(req,res) =>{
             console.log("Insert data failed!");
             throw err
         }
-        return res.json(result)
+        return res.send(result)
     })
 })
 
-//get data
-// user_router.get("/",(req,res)=>{
-//     return res.status(200).json(a)
-// })
-
+//get data at index from mySql
 user_router.get("/:id",(req, res)=>{
     const id = parseInt(req.params.id);
     con.query(`SELECT * FROM users WHERE id = ?`,[id], function(err,result){
@@ -62,18 +59,6 @@ user_router.get("/:id",(req, res)=>{
         }
     })
 })
-
-// user_router.post("/",validate,(req, res)=>{
-//     newUser ={
-//         id: a.length+1,
-//         fullname: req.body.fullname,
-//         gender: req.body.gender,
-//         age: req.body.age
-//     }
-//     a.push(newUser);
-//     fs.writeFileSync(filePath,JSON.stringify(a));
-//     return res.status(201).json(a[a.length-1])
-// })
 
 //update data in mysql
 user_router.put("/:id",validate,(req, res)=>{
@@ -117,11 +102,12 @@ user_router.put("/:id",validate,(req, res)=>{
     }
 })
 
+//delete data in mysql
 user_router.delete("/:id",(req, res)=>{
     const id = parseInt(req.params.id);
     const userIndex = listUsers.findIndex((user) => user.id === id);
-    if(userIndex === -1)
-        return res.status(404).send(`User with id ${id} not found`);
+    if(userIndex == -1)
+        res.status(404).send(`User with id ${id} not found`);
     else {
         let sql = 'DELETE FROM users WHERE id = ?';
         con.query(sql,[id],(err, result)=>{
