@@ -1,15 +1,19 @@
 const express = require('express');
 const user_router = express.Router();
 
-const validate = require('../middleware/index')
-const con = require('../database/connection')
+const con = require('../database/connection');
+const valToken = require('../middleware/valToken');
+const valUpdate = require('../middleware/valUpdate');
 
 let listUsers = []
 con.query('SELECT * FROM users ', function(err,result){
-    if(err)
+    if(err){
         console.log(err);
+        return res.status(500).json("Found ERR!");
+    }
     listUsers = result;
 })
+
 
 // const fs = require('fs');   
 // const path = require('path')
@@ -24,59 +28,62 @@ con.query('SELECT * FROM users ', function(err,result){
 // }
 
 //get data from mySql
-user_router.get("/",(req,res)=>{
+user_router.get("/",valToken,(req,res)=>{
     con.query('SELECT * FROM users ', function(err,result){
-        if(err)
+        if(err){
             console.log(err);
-        return res.send(result)
+            return res.status(500).json("Found ERR!");
+        }
+        return res.json(result)
     })
     // next();
 })
 
 // //insert data into mysql
-user_router.post("/",(req,res) =>{
+user_router.post("/",valToken,(req,res) =>{
     const {fullname, gender, age} = req.body
     let sql = `INSERT INTO users ( fullname, gender, age) VALUES (?,?,?)`;
     con.query(sql,[fullname, gender, age],function(err,result){
         if(err)
         {
             console.log("Insert data failed!");
-            throw err
+            return res.status(500).json("Found ERR!");
+
         }
-        return res.send(result)
+        return res.json(result)
     })
 })
 
 //get data at index from mySql
-user_router.get("/:id",(req, res)=>{
+user_router.get("/:id",valToken,(req, res)=>{
     const id = parseInt(req.params.id);
     con.query(`SELECT * FROM users WHERE id = ?`,[id], function(err,result){
         if(err){
             console.log(err);
+            return res.status(500).json("Found ERR!");
         }
         else {
-            return res.send(result)
+            return res.json(result)
         }
     })
 })
 
 //update data in mysql
-user_router.put("/:id",validate,(req, res)=>{
+user_router.put("/:id",[valToken,valUpdate],(req, res)=>{
     const id = parseInt(req.params.id);
     const userIndex = listUsers.findIndex((user) => user.id === id);
+    // console.log("update vo day");
     if(userIndex == -1)
-        res.status(404).send(`User with id ${id} not found`);
+        res.status(404).json(`User with id ${id} not found`);
     else {
        let sql = 'UPDATE users SET '
        let values = [];
 
-       const fullname = req.body.fullname;
-       const gender = req.body.gender;
-       const age = req.body.age;
+       const {name, age, gender}= req.body
 
-       if(fullname){
-            sql+= "fullname = ?,";
-            values.push(fullname)
+       if(name){
+            sql+= "name = ?,";
+            values.push(name)
        }
        if(gender){
             sql+= "gender = ?,"
@@ -95,29 +102,30 @@ user_router.put("/:id",validate,(req, res)=>{
         if(err)
             {
                 console.log(err);
-                res.status(500).send("Update failed!")
+                return res.status(500).json("Update failed!")
             }
-        res.send('User updated');
+        return res.json('User updated');
        })
     }
 })
 
 //delete data in mysql
-user_router.delete("/:id",(req, res)=>{
+user_router.delete("/:id",valToken,(req, res)=>{
     const id = parseInt(req.params.id);
     const userIndex = listUsers.findIndex((user) => user.id === id);
     if(userIndex == -1)
-        res.status(404).send(`User with id ${id} not found`);
+        return res.status(404).json(`User with id ${id} not found`);
     else {
         let sql = 'DELETE FROM users WHERE id = ?';
         con.query(sql,[id],(err, result)=>{
             if(err){
                 console.log(err);
-                return res.status(500).send('Delete failed')
+                return res.status(500).json('Delete failed')
             }
-            return res.status(200).send(' User Deleted!')
+            return res.status(200).json(' User Deleted!')
         })
     }
 })
+
 
 module.exports = user_router;
