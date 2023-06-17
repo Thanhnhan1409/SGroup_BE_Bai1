@@ -58,26 +58,26 @@ const getPolls = async () => {
     return result;
 };
 
+
 const getPollById = async (pollId) => {
     try {
-        // const poll = await knex('poll')
-        //     .leftJoin('options', 'poll.id_poll', 'options.id_poll')
-        //     .select(
-        //         'poll.id_poll',
-        //         'poll.title',
-        //         'poll.question',
-        //         'poll.created_at',
-        //         'poll.created_by',
-        //         'options.id_option',
-        //         'options.content',
-        //         'options.created_by',
-        //     )
-        //     .where('poll.id_poll', pollId)
-        //     .groupBy('poll.id_poll', 'options.id_option')
-        //     .first();
+        const poll = await knex('poll')
+        .select(
+            'poll.id_poll',
+            'poll.title',
+            'poll.question',
+            'poll.created_at',
+            'poll.created_by',
+            'options.id_option',
+            'options.content',
+            'options.created_by',
+        )
+        .where('poll.id_poll',pollId)
+        .leftJoin('options', 'poll.id_poll', 'options.id_poll')
+        .groupBy('poll.id_poll', 'options.id_option');
 
-        const [poll] = await knex('poll').select('*')
-        .where("id_poll",pollId)
+        // const [poll] = await knex('poll').select('*')
+        // .where("id_poll",pollId)
         if (!poll) {
             // Poll with the specified ID was not found
             return null;
@@ -87,7 +87,6 @@ const getPollById = async (pollId) => {
         return formattedPoll;
     } catch (error) {
         console.log(error);
-        return null;
     }
 };
 

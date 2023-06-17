@@ -33,8 +33,9 @@ poll_router.get('/', authenMiddleware, async (req, res) => {
 });
 
 poll_router.get('/:id', authenMiddleware, async (req, res) => {
+    const id = parseInt(req.params.id)
     try {
-        const poll = await getPollById();
+        const poll = await getPollById(id);
         return res.status(200).json({
             status: 'success',
             data: poll,
