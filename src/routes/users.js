@@ -15,7 +15,7 @@ const getCreatedBy = require('../middleware/getCreatedBy');
 user_router.get('/',authenMiddleware,async (req, res) =>{
     try {
         const page_Size = parseInt(req.query.pageSize) || 10;
-        const {page = 1, email='', fullname='' } = req.query;
+        const {page = 1, email='', fullname='' } = req.body;
 
         const { users, totalPage, totalPageData} = await getUsers(
             page,
