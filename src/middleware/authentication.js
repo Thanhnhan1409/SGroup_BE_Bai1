@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-function validateToken(req, res, next){
+function authentication(req, res, next){
     const token = req.headers['authorization'];
     if(!token){
         return res.status(403).json({
@@ -14,6 +14,9 @@ function validateToken(req, res, next){
             console.log('token is inValid');
             return res.status(401).json('InValid');
         }
+        req.body.user_role = isTokenValid.user_role;
+        const a = req.body.user_role;
+        console.log(a);
         next()
     } catch (error) {
         console.log(error);
@@ -22,4 +25,4 @@ function validateToken(req, res, next){
         })
     }
 }
-module.exports= validateToken
+module.exports= authentication

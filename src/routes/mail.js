@@ -9,6 +9,7 @@ const { getUserByData } = require('../database/userQuery');
 const hashPassword = require('../middleware/hashPassword');
 const knex = require('../database/connection');
 
+
 mail_router.post('/forgot-password', async (req, res) => {
     const email = req.body.email;
     const user = await getUserByData('email', email);

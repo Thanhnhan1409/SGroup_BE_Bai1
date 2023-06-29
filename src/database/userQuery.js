@@ -10,33 +10,42 @@ const getUsers = async (page, pageSize, email, fullname) => {
         .offset(offset)
         .limit(pageSize);
 
-        const totalPageData = await knex('users')
+    const totalPageData = await knex('users')
         .count('id as count')
-        .where('email','like',`%${email}%`)
-        .andWhere('fullname','like',`%${fullname}%`);
+        .where('email', 'like', `%${email}%`)
+        .andWhere('fullname', 'like', `%${fullname}%`);
 
-        const totalPages = Math.ceil(totalPageData[0].count /pageSize);
+    const totalPages = Math.ceil(totalPageData[0].count / pageSize);
 
-        return {
-            users,
-            totalPages,
-            totalPageData: totalPageData[0].count,
-        };
+    return {
+        users,
+        totalPages,
+        totalPageData: totalPageData[0].count,
+    };
 };
 
-const getUserByData = async(type, data) =>{
-    const [users] = await knex('users')
-    .select('*')
-    .where(type,data);
-    if(!users) {
-        return ;
+const getUserByData = async (type, data) => {
+    const [users] = await knex('users').select('*').where(type, data);
+
+    const userRoles = await knex('roles')
+        .select('roles.role_name')
+        .join('users_roles as ur', 'ur.id_role', 'roles.id_role')
+        .join('users', 'users.id', 'ur.id_user')
+        .where(type, data);
+
+    const roleNames = userRoles.map((row) => row.role_name);
+
+    users.role=roleNames;
+    if (!users) {
+        return;
     }
     return users;
-}
+};
 
-const addUser = async(userData)=>{
-    const { fullname, gender, age, email, username, password, created_by } = userData;
-    const created_at = new Date()
+const addUser = async (userData) => {
+    const { fullname, gender, age, email, username, password, created_by } =
+        userData;
+    const created_at = new Date();
 
     const hashedPassword = hashPassword(password);
     console.log(hashedPassword.pass);
@@ -53,21 +62,20 @@ const addUser = async(userData)=>{
             salt: hashedPassword.salt,
         });
         return user;
-
-    } catch(error){
+    } catch (error) {
         console.log(error);
         throw new Error('Error adding user');
     }
 };
 
-const deleteUserById = async (id) =>{
+const deleteUserById = async (id) => {
     try {
-        const user = await knex('users').where('id',id).del();
+        const user = await knex('users').where('id', id).del();
 
-        if(user === 0){
-            throw new Error('User not found')
+        if (user === 0) {
+            throw new Error('User not found');
         }
-        
+
         return user;
     } catch (error) {
         console.log(error);
@@ -75,20 +83,20 @@ const deleteUserById = async (id) =>{
     }
 };
 
-const updateUser = async (id, newUser) =>{
-    const {fullname, gender, age} = newUser;
+const updateUser = async (id, newUser) => {
+    const { fullname, gender, age } = newUser;
     try {
         const result = await knex('users')
-        .where('id',id)
-        .update({fullname, gender, age})
+            .where('id', id)
+            .update({ fullname, gender, age });
 
-        if(result === 0){
-            throw new Error('User with id ${id} not found')
+        if (result === 0) {
+            throw new Error('User with id ${id} not found');
         }
     } catch (error) {
         console.log(error);
         throw new Error('Error updating user');
-    } 
+    }
 };
 
 module.exports = {
