@@ -13,7 +13,7 @@ const getCreatedBy = require('../middleware/getCreatedBy');
 const authorization = require('../middleware/authorization')
 
 
-user_router.get('/',[authenMiddleware,authorization[2,1]],async (req, res) =>{
+user_router.get('/',[authenMiddleware,authorization(['getAllUser'])],async (req, res) =>{
     try {
         const page_Size = parseInt(req.query.pageSize) || 10;
         const {page = 1, email='', fullname='' } = req.body;
@@ -43,7 +43,7 @@ user_router.get('/',[authenMiddleware,authorization[2,1]],async (req, res) =>{
     }
 })
 
-user_router.get('/:id',[authenMiddleware,authorization([1])], async(req, res) =>{
+user_router.get('/:id',[authenMiddleware,authorization(['getSingleUser'])], async(req, res) =>{
     const id = parseInt(req.params.id);
     try {
         const user = await getUserByData('id',id);
@@ -60,7 +60,7 @@ user_router.get('/:id',[authenMiddleware,authorization([1])], async(req, res) =>
     }
 })
 
-user_router.post('/',[authenMiddleware,authorization[2,1],validateUser,getCreatedBy], async (req, res) =>{
+user_router.post('/',[authenMiddleware,authorization(['createUser']),validateUser,getCreatedBy], async (req, res) =>{
     const { fullname, gender, age, email, username, password, created_by } = req.body;
     const user = await getUserByData('username',username);
     if(user){
@@ -96,7 +96,7 @@ user_router.post('/',[authenMiddleware,authorization[2,1],validateUser,getCreate
 })
 
 
-user_router.delete('/:id', authenMiddleware, async (req, res) => {
+user_router.delete('/:id', [authenMiddleware, authorization(['deleteUser'])], async (req, res) => {
     const id = parseInt(req.params.id);
 
     try {
@@ -115,7 +115,7 @@ user_router.delete('/:id', authenMiddleware, async (req, res) => {
 });
 
 
-user_router.put('/:id', authenMiddleware,validateUpdate, async (req, res) => {
+user_router.put('/:id', [authenMiddleware,authorization(['updateUser']) ],validateUpdate, async (req, res) => {
     const id = parseInt(req.params.id);
     const { fullname, gender, age } = req.body;
 

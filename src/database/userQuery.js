@@ -27,15 +27,19 @@ const getUsers = async (page, pageSize, email, fullname) => {
 const getUserByData = async (type, data) => {
     const [users] = await knex('users').select('*').where(type, data);
 
-    const userRoles = await knex('roles')
-        .select('roles.role_name')
+    const userPermissions = await knex('Permissions')
+        .select('Permissions.permission_type')
+        .join(' roles_permissions', 'roles_permissions.id_permission', 'Permissions.id_permission')
+        .join('roles', 'roles.id_role', 'roles_permissions.id_role')
         .join('users_roles as ur', 'ur.id_role', 'roles.id_role')
         .join('users', 'users.id', 'ur.id_user')
         .where(type, data);
 
-    const roleNames = userRoles.map((row) => row.role_name);
 
-    users.role=roleNames;
+    const roleNames = userPermissions.map((row) => row.permission_type);
+
+    users.permissions=roleNames;
+    console.log(users.permissions);
     if (!users) {
         return;
     }

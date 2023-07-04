@@ -14,9 +14,7 @@ function authentication(req, res, next){
             console.log('token is inValid');
             return res.status(401).json('InValid');
         }
-        req.body.user_role = isTokenValid.user_role;
-        const a = req.body.user_role;
-        console.log(a);
+        req.body.user_permissions = isTokenValid.user_role;
         next()
     } catch (error) {
         console.log(error);
