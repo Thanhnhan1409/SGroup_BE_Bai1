@@ -10,9 +10,9 @@ const {
 require('dotenv').config();
 
 
-const { validateUser, validateLogin } = require('../middleware/validate');
+const {  validateLogin } = require('../middleware/validate');
 
-auth_router.post('/register', validateUser, async (req, res) => {
+auth_router.post('/register', async (req, res) => {
     const {
         username,
         password,

@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 require('dotenv').config();
 const knex = require('knex')({
-    client: 'mysql',
+    client: 'mysql2',
     connection: {
         port: 3306,
         host: process.env.DB_HOST,

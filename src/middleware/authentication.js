@@ -15,7 +15,7 @@ function authentication(req, res, next){
             return res.status(401).json('InValid');
         }
         req.body.user_permissions = isTokenValid.user_role;
-        next()
+        next();
     } catch (error) {
         console.log(error);
         return res.status(401).json({
@@ -23,4 +23,4 @@ function authentication(req, res, next){
         })
     }
 }
-module.exports= authentication
+module.exports= authentication;

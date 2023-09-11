@@ -35,10 +35,11 @@ const getUserByData = async (type, data) => {
         .join('users', 'users.id', 'ur.id_user')
         .where(type, data);
 
+    console.log('userPermissions',userPermissions);
 
     const roleNames = userPermissions.map((row) => row.permission_type);
 
-    users.permissions=roleNames;
+    users.permissions = roleNames;
     console.log(users.permissions);
     if (!users) {
         return;
