@@ -6,6 +6,7 @@ const hashPassword = require('../middleware/hashPassword');
 const {
     getUserByData,
     addUser,
+    getRoles,
 } = require('../database/userQuery');
 require('dotenv').config();
 
@@ -59,6 +60,8 @@ auth_router.post('/login', validateLogin, async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await getUserByData('username', username);
+        const userRoles = await getRoles('users.id',user.id);
+        console.log('user', user);
         if (!user) {
             return res.status(404).json({
                 message: 'Username is not exists',
@@ -69,7 +72,6 @@ auth_router.post('/login', validateLogin, async (req, res) => {
                 const token = jwt.sign({
                     username:username,
                     user_id: user.id,
-                    user_role: user.role
                 },
                 process.env.SECRET,
                 {
@@ -80,6 +82,7 @@ auth_router.post('/login', validateLogin, async (req, res) => {
                 );
                 return res.status(200).json({
                     access_token: token,
+                    user_role: userRoles,
                     message:'Login susscess'
                 })
             } else {

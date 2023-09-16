@@ -9,15 +9,16 @@ function authentication(req, res, next){
     const jwtHeader = token.substring(7); //jwjHeader: Bearer <token>
     try {
         // eslint-disable-next-line no-undef
-        const isTokenValid = jwt.verify(jwtHeader,process.env.SECRET)
-        if(!isTokenValid){
-            console.log('token is inValid');
+        const validToken = jwt.verify(jwtHeader,process.env.SECRET);
+        console.log('validToken', validToken);
+        if(!validToken){
             return res.status(401).json('InValid');
         }
-        req.body.user_permissions = isTokenValid.user_role;
+        req.body.user_id = validToken.user_id;
         next();
     } catch (error) {
         console.log(error);
+        console.log('sai day ne');
         return res.status(401).json({
             message: "Invalid token!"
         })

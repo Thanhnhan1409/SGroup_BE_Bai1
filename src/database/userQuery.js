@@ -27,35 +27,34 @@ const getUsers = async (page, pageSize, email, fullname) => {
 const getUserByData = async (type, data) => {
     const [users] = await knex('users').select('*').where(type, data);
 
-    const userPermissions = await knex('Permissions')
-        .select('Permissions.permission_type')
-        .join(' roles_permissions', 'roles_permissions.id_permission', 'Permissions.id_permission')
-        .join('roles', 'roles.id_role', 'roles_permissions.id_role')
-        .join('users_roles as ur', 'ur.id_role', 'roles.id_role')
-        .join('users', 'users.id', 'ur.id_user')
-        .where(type, data);
-
-    console.log('userPermissions',userPermissions);
-
-    const roleNames = userPermissions.map((row) => row.permission_type);
-
-    users.permissions = roleNames;
-    console.log(users.permissions);
     if (!users) {
         return;
     }
     return users;
 };
 
+const getRoles = async (type, data) => {
+    console.log('data', data);
+    const userRole = await knex('roles')
+        .select('roles.role_name')
+        .join('users_roles as ur', 'ur.id_role', 'roles.id_role')
+        .join('users', 'users.id', 'ur.id_user')
+        .where(type, data);
+    console.log('userRole', userRole);
+    const rolesName = userRole.map((role) => role.role_name);
+
+    return rolesName;
+}
+
 const addUser = async (userData) => {
-    const { fullname, gender, age, email, username, password, created_by } =
+    const { fullname, gender, age, email, username, password, urlImage, major, created_by, role } =
         userData;
     const created_at = new Date();
 
     const hashedPassword = hashPassword(password);
-    console.log(hashedPassword.pass);
+    console.log('urlImage',urlImage);
     try {
-        const user = await knex('users').insert({
+        const userId = await knex('users').insert({
             fullname,
             gender,
             age,
@@ -65,8 +64,26 @@ const addUser = async (userData) => {
             username,
             password: hashedPassword.pass,
             salt: hashedPassword.salt,
+            urlImage
         });
-        return user;
+
+        await knex('user_major').insert({
+            id_user: userId,
+            id_major: major
+        })        
+        
+        if(role === null || role === '3') {
+            await knex('users_roles').insert({
+                id_user: userId,
+                id_role: 3
+            })
+        } else {
+            await knex('users_roles').insert({
+                id_user: userId,
+                id_role: role
+            })
+        }
+        return userId;
     } catch (error) {
         console.log(error);
         throw new Error('Error adding user');
@@ -75,6 +92,8 @@ const addUser = async (userData) => {
 
 const deleteUserById = async (id) => {
     try {
+        await knex('user_major').where('id_user', id).del();
+        await knex('users_roles').where('id_user', id).del();
         const user = await knex('users').where('id', id).del();
 
         if (user === 0) {
@@ -89,11 +108,11 @@ const deleteUserById = async (id) => {
 };
 
 const updateUser = async (id, newUser) => {
-    const { fullname, gender, age } = newUser;
+    const { fullname, gender, age, username } = newUser;
     try {
         const result = await knex('users')
             .where('id', id)
-            .update({ fullname, gender, age });
+            .update({ fullname, gender, age, username });
 
         if (result === 0) {
             throw new Error('User with id ${id} not found');
@@ -110,4 +129,5 @@ module.exports = {
     addUser,
     deleteUserById,
     updateUser,
+    getRoles
 };

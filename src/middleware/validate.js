@@ -5,8 +5,8 @@ function validateUpdate(req, res, next) {
       req.body;
   
   
-    if (fullname.length < 2)
-      return res.status(400).json("fullname has to the length than 2!");
+    // if (fullname.length < 2)
+    //   return res.status(400).json("fullname has to the length than 2!");
   
     if (age <= 0) return res.status(400).json("Age must be greater than 0!");
     const regexC =

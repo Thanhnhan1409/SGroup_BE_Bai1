@@ -20,6 +20,7 @@ const getCreatedBy = async(req, res, next) => {
         else {
             const created_by = verifyToken.user_id;
             req.body.created_by = created_by;
+            console.log('req.body.created_by',req.body.created_by);
             next()
         }
     } catch (error) {
